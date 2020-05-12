@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#define NULL 0
 
 struct {
   struct spinlock lock;
@@ -88,6 +89,11 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+
+  p->isodd = p->pid/2;
+  p->createtime = ticks; 
+  p->level=0;
+  p->priority=0;
 
   release(&ptable.lock);
 
@@ -332,6 +338,127 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
+
+#ifdef MULTILEVEL_SCHED
+   struct proc* oldproc;
+   oldproc = NULL;
+
+   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+       if((p->pid)%2==0)
+       {
+           if(p->state==RUNNABLE)
+           {
+
+               p->tick++;
+               c->proc= p;
+               switchuvm(p);
+               p->state = RUNNING;
+               swtch(&(c->scheduler), p-> context);
+               switchkvm();
+               c->proc=0;
+           }
+       }
+   }
+   
+   if(p == &ptable.proc[NPROC])
+   {
+       for(p = ptable.proc; p<&ptable.proc[NPROC]; p++)
+       {
+          if((p->pid)%2==1)
+          {
+                  if(p->state==RUNNABLE)
+                  {
+                  if(oldproc==NULL) oldproc=p;
+  
+                  else
+                  {
+                      if(p->createtime<oldproc->createtime) oldproc=p;
+                  }
+              }
+          }
+       }
+   
+   
+
+       if(oldproc!=NULL)
+       {
+           p=oldproc;
+
+           p->tick=0;
+
+           p->tick++;
+           c->proc=p;
+           switchuvm(p);
+           p->state = RUNNING;
+           swtch(&(c->scheduler), p->context);
+           switchkvm();
+           c->proc = 0;
+       }
+   }
+
+#elif MLFQ_SCHED
+    struct proc* superp; //Highest priority
+    superp=NULL;
+
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    {
+     
+        if(p->level == 0)
+        {
+           if(p->state == RUNNABLE)
+           {
+                if(superp==NULL) superp=p;
+                else if(superp->priority<p->priority) superp=p;
+            
+           }
+   
+        }
+    }
+
+    goto sched;
+    
+    int a;
+    for(a=1; a<MLFQ_K; a++)
+    {
+         if(p == &ptable.proc[NPROC])
+         {
+            for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+            {
+                if(p->level == a)
+                {
+                    if(p->state == RUNNABLE)
+                    {
+                        if(superp==NULL) superp=p;
+                        else if(superp->priority < p->priority) superp=p;
+                    }
+                }
+            }
+
+            goto sched;
+         }
+
+    }
+
+
+sched:
+    if(superp!=NULL)
+    {
+          p=superp;
+          p->tick++;
+         
+          c->proc=p;
+          switchuvm(p);
+          p->state=RUNNING;
+          swtch(&(c->scheduler), p->context);
+          switchkvm();
+          c->proc=0;
+     }
+     
+    
+
+    
+#else
+    cprintf("FFFFFFFFFFFFFFFFFFFFFFF\n");
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
@@ -350,6 +477,8 @@ scheduler(void)
       // It should have changed its p->state before coming back.
       c->proc = 0;
     }
+
+#endif
     release(&ptable.lock);
 
   }
@@ -531,4 +660,43 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+
+void boost(struct proc* p)
+{
+    acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    {
+          p->level = 0;
+          p-> priority = 0;
+    }
+    release(&ptable.lock);
+}
+
+
+int getlev(void)
+{
+    int lev = myproc()->level;
+    return lev;
+}
+
+int setpriority(int pid, int priority)
+{
+    if(priority<0 || priority>10) return -2;
+
+    else
+    {
+          struct proc *p;
+   
+           for(p=ptable.proc; p<&ptable.proc[NPROC]; p++)
+           {
+                  if(p->pid == pid)
+                  {
+                      p->priority = priority;
+                      return 0;
+                  }
+           }
+        
+    }
+    return -1;
 }

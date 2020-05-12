@@ -1,0 +1,4 @@
+make clean
+make SCHED_POLICY=MULTILEVEL_SCHED CPUS=1 -j
+make fs.img
+./xv6_sh

@@ -89,3 +89,32 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+void
+sys_yield(void)
+{
+    yield();
+    return;
+}
+
+int
+sys_getlev(void)
+{
+    int level = getlev();
+    return level;
+}
+
+int
+sys_setpriority(int pid, int priority)
+{
+    int set;
+    set=setpriority(pid, priority);
+    return set;
+}
+
+void
+sys_procdump(void)
+{
+    procdump();
+    return;
+}

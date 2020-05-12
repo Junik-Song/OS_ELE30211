@@ -19,7 +19,8 @@ int main(int argc, char *argv[])
     {
          for(i=0; i<10; i++)
          {
-              my_yield(chi);
+              yield();
+              printf(0,"%s\n", chi);
          }
          exit();
      }       
@@ -27,7 +28,8 @@ int main(int argc, char *argv[])
      {
          for(i=0; i<10; i++)
          {
-            my_yield(par);
+               yield();
+               printf(0,"%s\n", par);
          }
          wait();
          exit();

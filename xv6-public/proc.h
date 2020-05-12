@@ -49,6 +49,11 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
+  uint createtime;
+  int isodd;                   // Define if pid is odd or not
+  int priority;                // Process Priority (0-10), higher value, higher priority
+  int level;                   // What level of queue is process in
+  int tick;                    // Used to caluculate time quantum
 };
 
 // Process memory is laid out contiguously, low addresses first:
