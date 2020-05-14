@@ -128,7 +128,6 @@ trap(struct trapframe *tf)
           myproc()->tick >= (myproc()->level)*2+4 &&
           myproc()->level < MLFQ_K-1){
         myproc()->tick = 0;
-        myproc()->priority=0;
         myproc()->level++;
         yield();
   }
@@ -137,8 +136,7 @@ trap(struct trapframe *tf)
           tf->trapno == T_IRQ0 + IRQ_TIMER &&
           myproc()->level == MLFQ_K-1 && myproc()->tick>=(myproc()->level)*2+4){
         myproc()->tick=0;
-        if(myproc()->priority>=1)
-            myproc()->priority--;
+        myproc()->priority=0;
 
         yield();
   }
