@@ -242,7 +242,7 @@ int main(int argc, char *argv[])
       r = setpriority(child, 10);
       if (r != 0)
         printf(1, "wrong: setpriority of child: expected 0, got %d\n", r);
-      r = setpriority(child + 1, 10);
+      r = setpriority(child + 1, 1);
       if (r != 0)
         printf(1, "wrong: setpriority of child: expected 0, got %d\n", r);
       r = setpriority(child + 2, 10);

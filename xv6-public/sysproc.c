@@ -43,6 +43,12 @@ sys_getpid(void)
 }
 
 int
+sys_getppid(void)
+{
+    return myproc()->parent->pid;
+}
+
+int
 sys_sbrk(void)
 {
   int addr;
@@ -93,6 +99,10 @@ sys_uptime(void)
 void
 sys_yield(void)
 {
+#ifdef MLFQ_SCHED
+    myproc()->level=0;
+    myproc()->tick=0;
+#endif
     yield();
     return;
 }
@@ -106,10 +116,12 @@ sys_getlev(void)
 
 int
 sys_setpriority(int pid, int priority)
-{
-    int set;
-    set=setpriority(pid, priority);
-    return set;
+{  
+    
+    int spid, spriority;
+    argint(0, &spid);
+    argint(1, &spriority);
+    return setpriority(spid, spriority);
 }
 
 void

@@ -20,13 +20,14 @@ int mkdir(const char*);
 int chdir(const char*);
 int dup(int);
 int getpid(void);
+int getppid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int my_yield(char*);
 int yield(void);
 int getlev(void);
-int setpriority(int pid, int priority);
+int setpriority(int, int);
 int procdump(void);
 
 

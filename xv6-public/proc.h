@@ -50,7 +50,6 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   uint createtime;
-  int isodd;                   // Define if pid is odd or not
   int priority;                // Process Priority (0-10), higher value, higher priority
   int level;                   // What level of queue is process in
   int tick;                    // Used to caluculate time quantum
@@ -61,3 +60,8 @@ struct proc {
 //   original data and bss
 //   fixed-size stack
 //   expandable heap
+
+void age();
+void boost();
+int getlev(void);
+int setpriority(int pid, int priority);

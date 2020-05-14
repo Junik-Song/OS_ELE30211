@@ -90,7 +90,6 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
 
-  p->isodd = p->pid/2;
   p->createtime = ticks; 
   p->level=0;
   p->priority=0;
@@ -340,126 +339,102 @@ scheduler(void)
     acquire(&ptable.lock);
 
 #ifdef MULTILEVEL_SCHED
-   struct proc* oldproc;
+   struct proc* oldproc;       //For FCFS (odd process)
    oldproc = NULL;
 
+first://To return and check even process
    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
        if((p->pid)%2==0)
        {
            if(p->state==RUNNABLE)
            {
-
-               p->tick++;
-               c->proc= p;
-               switchuvm(p);
-               p->state = RUNNING;
-               swtch(&(c->scheduler), p-> context);
-               switchkvm();
-               c->proc=0;
+              c->proc = p;
+              switchuvm(p);
+              p->state = RUNNING;
+              swtch(&(c->scheduler), p->context);
+              switchkvm();
+              c->proc=0;
            }
+       }
+
+       else if((p->pid)%2==1)
+       {
+            if(p->state == RUNNABLE)
+            {
+                if(oldproc==NULL) oldproc=p;
+              
+                else if(p->createtime<oldproc->createtime)
+                {
+                    oldproc=p;
+                }
+            }
        }
    }
    
-   if(p == &ptable.proc[NPROC])
-   {
-       for(p = ptable.proc; p<&ptable.proc[NPROC]; p++)
-       {
-          if((p->pid)%2==1)
-          {
-                  if(p->state==RUNNABLE)
-                  {
-                  if(oldproc==NULL) oldproc=p;
-  
-                  else
-                  {
-                      if(p->createtime<oldproc->createtime) oldproc=p;
-                  }
-              }
-          }
-       }
-   
    
 
-       if(oldproc!=NULL)
-       {
-           p=oldproc;
+    if(oldproc!=NULL)
+    {
+        for(p=ptable.proc;  p < &ptable.proc[NPROC]; p++){
+            if((p->pid)%2==0 && p->state==RUNNABLE)
+            {
+                goto first;  //Check if there is even process that is runnable
+            }
+        }
+        p=oldproc;
+        if((p->pid)%2==1) p->tick=0;
 
-           p->tick=0;
-
-           p->tick++;
-           c->proc=p;
-           switchuvm(p);
-           p->state = RUNNING;
-           swtch(&(c->scheduler), p->context);
-           switchkvm();
-           c->proc = 0;
-       }
+        c->proc=p;
+        switchuvm(p);
+        p->state = RUNNING;
+        swtch(&(c->scheduler), p->context);
+        switchkvm();
+        c->proc = 0;
+       
    }
 
 #elif MLFQ_SCHED
     struct proc* superp; //Highest priority
     superp=NULL;
+    int lev;
 
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    for(lev=0; lev<MLFQ_K; lev++)
     {
-     
-        if(p->level == 0)
+        for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
         {
-           if(p->state == RUNNABLE)
-           {
-                if(superp==NULL) superp=p;
-                else if(superp->priority<p->priority) superp=p;
+     
+            if(p->level == lev)
+            {
+               if(p->state == RUNNABLE)
+               {
+                    if(superp==NULL) superp=p;
+                    else if(superp->priority<p->priority
+                            && superp->level>=p->level) superp=p;
             
-           }
+               }
    
+            }
         }
     }
 
-    goto sched;
-    
-    int a;
-    for(a=1; a<MLFQ_K; a++)
-    {
-         if(p == &ptable.proc[NPROC])
-         {
-            for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-            {
-                if(p->level == a)
-                {
-                    if(p->state == RUNNABLE)
-                    {
-                        if(superp==NULL) superp=p;
-                        else if(superp->priority < p->priority) superp=p;
-                    }
-                }
-            }
-
-            goto sched;
-         }
-
-    }
-
-
-sched:
+ 
     if(superp!=NULL)
     {
           p=superp;
-          p->tick++;
-         
+               
           c->proc=p;
           switchuvm(p);
           p->state=RUNNING;
           swtch(&(c->scheduler), p->context);
           switchkvm();
           c->proc=0;
-     }
+    }
      
     
 
     
 #else
-    cprintf("FFFFFFFFFFFFFFFFFFFFFFF\n");
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
 
@@ -662,13 +637,29 @@ procdump(void)
   }
 }
 
+void age(void)
+{
+    struct proc* p;
+    acquire(&ptable.lock);
+    for(p=ptable.proc; p<&ptable.proc[NPROC]; p++)
+    {
+        if(p->state==RUNNING)
+        {
+            p->tick++;
+        }
+    }
+
+    release(&ptable.lock);
+
+    return;
+}
 void boost(struct proc* p)
 {
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     {
           p->level = 0;
-          p-> priority = 0;
+          p->tick = 0;
     }
     release(&ptable.lock);
 }
@@ -682,21 +673,29 @@ int getlev(void)
 
 int setpriority(int pid, int priority)
 {
-    if(priority<0 || priority>10) return -2;
-
-    else
+    if(priority>=0 && priority<=10)
     {
           struct proc *p;
    
            for(p=ptable.proc; p<&ptable.proc[NPROC]; p++)
            {
-                  if(p->pid == pid)
+                  if(p->parent->pid == myproc()->pid)
                   {
-                      p->priority = priority;
-                      return 0;
+                      if(p->pid == pid)
+                      {
+                          p->priority = priority;
+                          return 0;
+                      }
                   }
            }
+
+           return -1;
         
     }
-    return -1;
+    
+
+    else{
+        return -2;
+    }
+
 }

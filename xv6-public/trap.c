@@ -51,7 +51,14 @@ trap(struct trapframe *tf)
     if(cpuid() == 0){
       acquire(&tickslock);
       ticks++;
+#ifdef MULTILEVEL_SCHED
+      age();
 
+#elif MLFQ_SCHED
+      age();
+      if(ticks%100 == 0) boost();
+
+#endif
       wakeup(&ticks);
       release(&tickslock);
     }
@@ -102,10 +109,11 @@ trap(struct trapframe *tf)
     exit();
 #ifdef MULTILEVEL_SCHED
   if(myproc() && myproc()->state == RUNNING &&
-          tf->trapno == T_IRQ0+IRQ_TIMER &&
+       tf->trapno == T_IRQ0 + IRQ_TIMER && 
           (myproc()->pid)%2==0){
         yield();
   }
+
   if(myproc() && myproc()->state == RUNNING &&
           (myproc()->pid)%2==1 &&
           myproc()->tick >= 100)
@@ -127,7 +135,7 @@ trap(struct trapframe *tf)
 
   if(myproc() && myproc()->state == RUNNING &&
           tf->trapno == T_IRQ0 + IRQ_TIMER &&
-          myproc()->level == MLFQ_K-1 && myproc()->tick==0){
+          myproc()->level == MLFQ_K-1 && myproc()->tick>=(myproc()->level)*2+4){
         myproc()->tick=0;
         if(myproc()->priority>=1)
             myproc()->priority--;
