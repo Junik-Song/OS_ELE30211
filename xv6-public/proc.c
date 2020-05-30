@@ -117,6 +117,15 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
 
+
+  p->admin=0;
+  p->limit = 0;
+
+  //Shared Memory
+  if((p->pgdir = setupkvm()) == 0)
+      panic("shared memory fail\n");
+  p->shmadd = getadd();
+
   return p;
 }
 
@@ -167,6 +176,8 @@ growproc(int n)
   struct proc *curproc = myproc();
 
   sz = curproc->sz;
+  if(curproc->limit!=0 && curproc->limit < sz + n) return -1;
+
   if(n > 0){
     if((sz = allocuvm(curproc->pgdir, sz, sz + n)) == 0)
       return -1;
@@ -637,6 +648,19 @@ procdump(void)
   }
 }
 
+void list(void)
+{
+    struct proc *p;
+    cprintf("NAME          | PID | TIME(ms) | MEMORY(bytes) | MEMLIM(bytes)\n");
+    for(p = ptable.proc; p<&ptable.proc[NPROC]; p++)
+    {
+            if(p->state != NULL)  
+            cprintf("%s           %d           %d          %d        %d\n"
+                    , p->name, p->pid, p->tick, p->sz, p->limit);
+             
+    }
+}
+
 void age(void)
 {
     struct proc* p;
@@ -697,5 +721,46 @@ int setpriority(int pid, int priority)
     else{
         return -2;
     }
+
+}
+
+int getadmin(char *password)
+{
+    myproc()->admin = 1;
+    return 0;
+}
+
+int setmemorylimit(int pid, int limit)
+{
+    if(limit<0) return -1;
+
+    struct proc *p;
+
+    for(p=ptable.proc; p<&ptable.proc[NPROC]; p++)
+    {
+        if(p->pid == pid)
+        {
+            if(limit!=0 && limit < p->limit) return -1;
+
+            else p->limit = limit;
+            return 0;
+        }
+    }
+
+    return -1;
+}
+
+char *getshmem(int pid)
+{
+    struct proc *p;
+    for(p=ptable.proc; p<&ptable.proc[NPROC]; p++)
+    {
+        if(p->pid == pid)
+        {
+            return p->shmadd;
+        }
+    }
+
+    return "error";
 
 }

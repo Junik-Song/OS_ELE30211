@@ -29,7 +29,11 @@ int yield(void);
 int getlev(void);
 int setpriority(int, int);
 int procdump(void);
-
+int getadmin(char*);
+int exec2(char*, char**, int);
+int setmemorylimit(int, int);
+char* getshmem(int);
+void list(void);
 
 // ulib.c
 int stat(const char*, struct stat*);
@@ -44,3 +48,5 @@ void* memset(void*, int, uint);
 void* malloc(uint);
 void free(void*);
 int atoi(const char*);
+int strcspn(const char*, const char*);
+char *strtok(char*, const char*);

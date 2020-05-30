@@ -28,7 +28,8 @@ OBJS = \
 	vectors.o\
 	vm.o\
     prac_yield.o\
- 
+    exec2.o\
+
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf
@@ -189,6 +190,11 @@ UPROGS=\
     _yieldapp\
     _mlfq_test\
     _ml_test\
+    _p2_admin_test\
+    _p2_memory_test\
+    _p2_shmem_test\
+    _p2_stack_test\
+    _pmanager\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)

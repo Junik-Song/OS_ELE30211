@@ -26,3 +26,8 @@
 #define SYS_setpriority   25
 #define SYS_procdump  26
 #define SYS_getppid   27
+#define SYS_getadmin  28
+#define SYS_exec2     29
+#define SYS_setmemorylimit   30
+#define SYS_getshmem    31
+#define SYS_list    32

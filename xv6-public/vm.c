@@ -54,6 +54,9 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc)
   return &pgtab[PTX(va)];
 }
 
+// To get Address
+char *add;
+
 // Create PTEs for virtual addresses starting at va that refer to
 // physical addresses starting at pa. va and size might not
 // be page-aligned.
@@ -76,6 +79,7 @@ mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm)
     a += PGSIZE;
     pa += PGSIZE;
   }
+  add=a;
   return 0;
 }
 
@@ -133,6 +137,12 @@ setupkvm(void)
       return 0;
     }
   return pgdir;
+}
+
+char*
+getadd(void)
+{
+    return add;
 }
 
 // Allocate one page table for the machine for the kernel address

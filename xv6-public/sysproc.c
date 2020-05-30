@@ -125,8 +125,51 @@ sys_setpriority(int pid, int priority)
 }
 
 void
+sys_list(void)
+{
+    list();
+    return;
+}
+
+void
 sys_procdump(void)
 {
     procdump();
     return;
+}
+
+int
+sys_getadmin(char *password)
+{
+    char *spw;
+    argstr(0, &spw);
+    char *rpw = "2016024884";
+    
+    if(strncmp(spw,rpw,30)==0)
+    {
+
+        return getadmin(spw);
+    }
+
+    else return -1;
+}
+
+int
+sys_setmemorylimit(int pid, int limit)
+{
+    argint(0, &pid);
+    argint(1, &limit);
+
+
+    if(myproc()->admin != 1) return -1;
+
+    else return setmemorylimit(pid, limit);
+}
+
+char*
+sys_getshmem(int pid)
+{
+    argint(0, &pid);
+
+    return getshmem(pid);
 }

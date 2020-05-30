@@ -420,6 +420,36 @@ sys_exec(void)
 }
 
 int
+sys_exec2(void)
+{
+  char *path, *argv[MAXARG];
+  int i;
+  int stacksize;
+  uint uargv, uarg;
+
+  argint(2, &stacksize);
+  if(argstr(0, &path) < 0 || argint(1, (int*)&uargv) < 0||
+          stacksize<1 || stacksize > 100 || myproc()->admin!=1){
+    return -1;
+  }
+  memset(argv, 0, sizeof(argv));
+  for(i=0;; i++){
+    if(i >= NELEM(argv))
+      return -1;
+    if(fetchint(uargv+4*i, (int*)&uarg) < 0)
+      return -1;
+    if(uarg == 0){
+      argv[i] = 0;
+      break;
+    }
+    if(fetchstr(uarg, &argv[i]) < 0)
+      return -1;
+  }
+  return exec2(path, argv, stacksize);
+}
+
+
+int
 sys_pipe(void)
 {
   int *fd;

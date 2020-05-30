@@ -104,3 +104,49 @@ memmove(void *vdst, const void *vsrc, int n)
     *dst++ = *src++;
   return vdst;
 }
+
+#define NULL 0
+
+/*
+
+source from
+http://www.koders.com/c/fidE1F6D546E578F9FF41B8000B08F8A73D4D86F8FA.aspx
+
+*/
+int strcspn(const char *s, const char *reject) {
+  int count = 0;
+
+  while (*s != '\0')
+    if (strchr(reject, *s++) == NULL)
+      ++count;
+    else
+      return count;
+
+  return count;
+}
+
+char *
+strtok(char *s, const char *delim)
+{
+     /*s: string to search for tokens */
+     /*delim: delimiting characters */
+
+    static char *lasts;
+    register int ch;
+    
+    if (s == 0)
+    {
+    	s = lasts;
+    }
+
+    do {
+	if ((ch = *s++) == '\0')
+	    return 0;
+    } while (strchr(delim, ch));
+    --s;
+    lasts = s + strcspn(s, delim);
+    if (*lasts != 0)
+	*lasts++ = 0;
+
+    return s;
+}

@@ -25,6 +25,9 @@ void            panic(char*) __attribute__((noreturn));
 // exec.c
 int             exec(char*, char**);
 
+// exec2.c
+int             exec2(char*, char**, int);
+
 // file.c
 struct file*    filealloc(void);
 void            fileclose(struct file*);
@@ -122,6 +125,8 @@ void            wakeup(void*);
 void            yield(void);
 int             getlev(void);
 int             setpriority(int pid, int priority);
+char*           getshmem(int pid);
+void            list(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
@@ -187,6 +192,7 @@ void            switchuvm(struct proc*);
 void            switchkvm(void);
 int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
+char*           getadd(void);
 
 // number of elements in fixed-size array
 int             my_yield(char*);

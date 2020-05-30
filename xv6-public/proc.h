@@ -53,6 +53,9 @@ struct proc {
   int priority;                // Process Priority (0-10), higher value, higher priority
   int level;                   // What level of queue is process in
   int tick;                    // Used to caluculate time quantum
+  int admin;                   // To see if process is admin mode, 1 if it is
+  uint limit;                  // Limit of Memory
+  char *shmadd;                // Address of shared memory
 };
 
 // Process memory is laid out contiguously, low addresses first:
@@ -65,3 +68,6 @@ void age();
 void boost();
 int getlev(void);
 int setpriority(int pid, int priority);
+int getadmin(char *password);
+int setmemorylimit(int pid, int limit);
+void list();
