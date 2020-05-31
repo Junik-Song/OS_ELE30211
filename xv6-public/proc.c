@@ -90,7 +90,7 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
 
-  p->createtime = ticks; 
+  p->createtime = ticks;
   p->level=0;
   p->priority=0;
 
@@ -215,6 +215,8 @@ fork(void)
   np->sz = curproc->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
+  np->admin = curproc->admin;
+  
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -231,7 +233,7 @@ fork(void)
   acquire(&ptable.lock);
 
   np->state = RUNNABLE;
-
+  
   release(&ptable.lock);
 
   return pid;
@@ -656,7 +658,7 @@ void list(void)
     {
             if(p->state != NULL)  
             cprintf("%s           %d           %d          %d        %d\n"
-                    , p->name, p->pid, p->tick, p->sz, p->limit);
+                    , p->name, p->pid, ticks-p->createtime, p->sz, p->limit);
              
     }
 }

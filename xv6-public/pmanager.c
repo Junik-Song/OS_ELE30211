@@ -15,6 +15,7 @@ int main()
     
 
     char *temp;
+    char *path;
     int pid, num;
     temp = "Iwanttogohome";
 
@@ -57,14 +58,32 @@ int main()
             
         }
 
-    	else if(strcmp(strtok(temp, " "), "exit\n")==0)
+    	else if(strcmp(temp, "exit\n")==0)
         {
+            wait();
             break;
+        }
+
+        else if(strcmp(temp, "execute") == 0)
+        {
+            path = strtok(NULL, " ");
+            num = atoi(strtok(NULL, " "));
+           
+            if(fork()==0)
+            {
+                if(exec2(path, &path, num) != 0)
+                {
+                        printf(1, "exec2 Failed :(\n");
+                }
+            }
+            
         }
 
     }
 
+
     printf(1, "Bye!\n");
 
     return 0;
+    
 }

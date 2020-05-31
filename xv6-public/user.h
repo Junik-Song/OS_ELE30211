@@ -50,3 +50,4 @@ void free(void*);
 int atoi(const char*);
 int strcspn(const char*, const char*);
 char *strtok(char*, const char*);
+char *strcat(char*, const char*);

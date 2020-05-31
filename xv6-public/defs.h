@@ -196,4 +196,5 @@ char*           getadd(void);
 
 // number of elements in fixed-size array
 int             my_yield(char*);
+
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

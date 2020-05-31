@@ -150,3 +150,15 @@ strtok(char *s, const char *delim)
 
     return s;
 }
+
+/*
+source from
+http://www.jbox.dk/sanos/source/lib/string.c.html
+   */
+char *strcat(char *dst, const char *src) {
+  char *cp = dst;
+  while (*cp) cp++;
+  while ((*cp++ = *src++)!=0)
+    ;
+  return dst;
+}
