@@ -84,6 +84,6 @@ int main()
 
     printf(1, "Bye!\n");
 
-    return 0;
+    exit();
     
 }

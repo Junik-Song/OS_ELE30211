@@ -6,7 +6,7 @@ void f(int depth)
 {
   volatile char arr[1000] = {0};
   sleep(100);
-  printf(1, "Recursion depth: %d\n", depth + arr[0]);
+  printf(1, "Recursion depth at %d: %d\n", &arr[0], depth + arr[0]);
   f(depth + 1);
 }
 
