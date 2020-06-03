@@ -139,7 +139,7 @@ sys_procdump(void)
 }
 
 int
-sys_getadmin(char *password)
+sys_getadmin(void)
 {
     char *spw;
     argstr(0, &spw);
