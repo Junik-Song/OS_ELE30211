@@ -25,7 +25,7 @@ int main()
        
         gets(temp, 100);
     	temp=strtok(temp, " ");
-        if(strcmp(temp, "list\n") == 0)
+        if(strcmp(temp, "list\n") == 0 || strcmp(temp, "list")==0)
         {
             list();
         }
@@ -58,7 +58,7 @@ int main()
             
         }
 
-    	else if(strcmp(temp, "exit\n")==0)
+    	else if(strcmp(temp, "exit\n")==0 || strcmp(temp, "exit") == 0) 
         {
             wait();
             break;
